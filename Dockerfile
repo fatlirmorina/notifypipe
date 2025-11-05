@@ -13,8 +13,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the application
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o notifypipe ./cmd/notifypipe
+# Build the application with proper CGO flags for SQLite
+RUN CGO_ENABLED=1 GOOS=linux go build -a -ldflags="-w -s -extldflags '-static'" -o notifypipe ./cmd/notifypipe
 
 # Final stage
 FROM alpine:latest

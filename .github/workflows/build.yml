@@ -38,7 +38,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.23"
 
       - name: Build
         run: make build
@@ -51,6 +51,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -95,22 +98,31 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.23"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-x86-64-linux-gnu
 
       - name: Build binaries
         run: |
-          GOOS=linux GOARCH=amd64 go build -o notifypipe-linux-amd64 ./cmd/notifypipe
-          GOOS=linux GOARCH=arm64 go build -o notifypipe-linux-arm64 ./cmd/notifypipe
-          GOOS=darwin GOARCH=amd64 go build -o notifypipe-darwin-amd64 ./cmd/notifypipe
-          GOOS=darwin GOARCH=arm64 go build -o notifypipe-darwin-arm64 ./cmd/notifypipe
-          GOOS=windows GOARCH=amd64 go build -o notifypipe-windows-amd64.exe ./cmd/notifypipe
+          # Linux AMD64
+          CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o notifypipe-linux-amd64 ./cmd/notifypipe
+          # Linux ARM64 (cross-compile disabled due to CGO complexity)
+          # GOOS=linux GOARCH=arm64 go build -o notifypipe-linux-arm64 ./cmd/notifypipe
+          # macOS AMD64 (CGO disabled for cross-compile)
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o notifypipe-darwin-amd64 ./cmd/notifypipe
+          # macOS ARM64 (CGO disabled for cross-compile)
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o notifypipe-darwin-arm64 ./cmd/notifypipe
+          # Windows AMD64 (CGO disabled for cross-compile)
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o notifypipe-windows-amd64.exe ./cmd/notifypipe
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             notifypipe-linux-amd64
-            notifypipe-linux-arm64
             notifypipe-darwin-amd64
             notifypipe-darwin-arm64
             notifypipe-windows-amd64.exe
