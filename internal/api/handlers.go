@@ -10,7 +10,7 @@ func (r *Router) healthCheck(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"status":  "ok",
 		"service": "NotifyPipe",
-		"version": "1.0.1",
+		"version": "1.0.2",
 	})
 }
 

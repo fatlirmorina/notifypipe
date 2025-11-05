@@ -54,7 +54,7 @@ func main() {
 
 	// Create Fiber app
 	app := fiber.New(fiber.Config{
-		AppName:      "NotifyPipe v1.0.1",
+		AppName:      "NotifyPipe v1.0.2",
 		ServerHeader: "NotifyPipe",
 	})
 

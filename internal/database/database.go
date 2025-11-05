@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/models/schema"
 )
@@ -35,10 +34,10 @@ func New(dataDir string) (*Database, error) {
 		return nil, err
 	}
 
-	// Setup collections on first run
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		return db.setupCollections()
-	})
+	// Setup collections immediately after bootstrap
+	if err := db.setupCollections(); err != nil {
+		log.Printf("Warning: Error setting up collections: %v", err)
+	}
 
 	return db, nil
 }
@@ -48,14 +47,17 @@ func (db *Database) setupCollections() error {
 	// Check if collections already exist
 	collections, err := db.app.Dao().FindCollectionsByType("base")
 	if err != nil {
-		return err
+		log.Printf("Error checking existing collections: %v", err)
+		// Continue anyway to try creating them
 	}
 
 	// If we already have collections, skip setup
-	if len(collections) > 0 {
+	if len(collections) >= 4 {
 		log.Println("Collections already exist, skipping setup")
 		return nil
 	}
+
+	log.Println("Setting up database collections...")
 
 	// Create notifications collection
 	notificationsCollection := &models.Collection{}
@@ -84,7 +86,9 @@ func (db *Database) setupCollections() error {
 	)
 
 	if err := db.app.Dao().SaveCollection(notificationsCollection); err != nil {
-		return err
+		log.Printf("Error creating notifications collection: %v", err)
+	} else {
+		log.Println("✅ Created notifications collection")
 	}
 
 	// Create containers collection
@@ -121,7 +125,9 @@ func (db *Database) setupCollections() error {
 	)
 
 	if err := db.app.Dao().SaveCollection(containersCollection); err != nil {
-		return err
+		log.Printf("Error creating containers collection: %v", err)
+	} else {
+		log.Println("✅ Created containers collection")
 	}
 
 	// Create events_log collection
@@ -159,7 +165,9 @@ func (db *Database) setupCollections() error {
 	)
 
 	if err := db.app.Dao().SaveCollection(eventsCollection); err != nil {
-		return err
+		log.Printf("Error creating events_log collection: %v", err)
+	} else {
+		log.Println("✅ Created events_log collection")
 	}
 
 	// Create settings collection
@@ -179,10 +187,12 @@ func (db *Database) setupCollections() error {
 	)
 
 	if err := db.app.Dao().SaveCollection(settingsCollection); err != nil {
-		return err
+		log.Printf("Error creating settings collection: %v", err)
+	} else {
+		log.Println("✅ Created settings collection")
 	}
 
-	log.Println("✅ Database collections created successfully")
+	log.Println("✅ Database setup completed")
 	return nil
 }
 
