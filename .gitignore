@@ -1,0 +1,48 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/bin/
+
+# Test binary
+*.test
+
+# Output
+*.out
+
+# Go workspace
+go.work
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+
+# PocketBase data
+/data/
+pb_data/
+pocketbase.db*
+
+# Environment files
+.env
+.env.local
+
+# Build artifacts
+build/
+
+# Logs
+*.log
+
+# Frontend
+node_modules/
+.next/
+out/
+.cache/
+*.tsbuildinfo

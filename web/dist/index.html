@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NotifyPipe - Docker Notification Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              dark: {
+                bg: "#0f0f0f",
+                surface: "#1a1a1a",
+                border: "#2a2a2a",
+                hover: "#252525",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #0f0f0f;
+      }
+    </style>
+  </head>
+  <body class="bg-dark-bg text-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-dark-surface border-b border-dark-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <h1 class="text-2xl font-bold text-white">🔔 NotifyPipe</h1>
+            <span class="ml-4 text-sm text-gray-400">Docker Notification Manager</span>
+          </div>
+          <div class="flex items-center space-x-4">
+            <span id="status-indicator" class="flex items-center text-sm">
+              <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+              <span class="text-gray-400">Connected</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Tabs -->
+      <div class="border-b border-dark-border mb-8">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            onclick="showTab('overview')"
+            class="tab-button border-b-2 border-blue-500 py-4 px-1 text-sm font-medium text-blue-500"
+          >
+            Overview
+          </button>
+          <button
+            onclick="showTab('containers')"
+            class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-400 hover:text-gray-300 hover:border-gray-300"
+          >
+            Containers
+          </button>
+          <button
+            onclick="showTab('notifications')"
+            class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-400 hover:text-gray-300 hover:border-gray-300"
+          >
+            Notifications
+          </button>
+          <button
+            onclick="showTab('events')"
+            class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-400 hover:text-gray-300 hover:border-gray-300"
+          >
+            Events
+          </button>
+        </nav>
+      </div>
+
+      <!-- Overview Tab -->
+      <div id="overview-tab" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <!-- Stats Cards -->
+          <div class="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-gray-400 text-sm">Containers</p>
+                <p id="containers-count" class="text-3xl font-bold text-white mt-2">0</p>
+              </div>
+              <div class="text-4xl">🐳</div>
+            </div>
+          </div>
+          <div class="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-gray-400 text-sm">Notification Channels</p>
+                <p id="notifications-count" class="text-3xl font-bold text-white mt-2">0</p>
+              </div>
+              <div class="text-4xl">📬</div>
+            </div>
+          </div>
+          <div class="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-gray-400 text-sm">Total Events</p>
+                <p id="events-count" class="text-3xl font-bold text-white mt-2">0</p>
+              </div>
+              <div class="text-4xl">📊</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Events -->
+        <div class="bg-dark-surface border border-dark-border rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4">Recent Events</h2>
+          <div id="recent-events" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- Containers Tab -->
+      <div id="containers-tab" class="tab-content hidden">
+        <div class="bg-dark-surface border border-dark-border rounded-lg">
+          <div class="p-6 border-b border-dark-border">
+            <h2 class="text-xl font-semibold">Containers</h2>
+            <p class="text-gray-400 text-sm mt-1">Manage which containers trigger notifications</p>
+          </div>
+          <div class="p-6">
+            <div id="containers-list" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications Tab -->
+      <div id="notifications-tab" class="tab-content hidden">
+        <div class="bg-dark-surface border border-dark-border rounded-lg">
+          <div class="p-6 border-b border-dark-border flex justify-between items-center">
+            <div>
+              <h2 class="text-xl font-semibold">Notification Channels</h2>
+              <p class="text-gray-400 text-sm mt-1">Configure where notifications are sent</p>
+            </div>
+            <button
+              onclick="showAddNotificationModal()"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              + Add Channel
+            </button>
+          </div>
+          <div class="p-6">
+            <div id="notifications-list" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events Tab -->
+      <div id="events-tab" class="tab-content hidden">
+        <div class="bg-dark-surface border border-dark-border rounded-lg">
+          <div class="p-6 border-b border-dark-border">
+            <h2 class="text-xl font-semibold">Event Log</h2>
+            <p class="text-gray-400 text-sm mt-1">Complete history of container events</p>
+          </div>
+          <div class="p-6">
+            <div id="events-list" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Notification Modal -->
+    <div
+      id="notification-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-dark-surface border border-dark-border rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-semibold mb-4">Add Notification Channel</h3>
+        <form id="notification-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Name</label>
+            <input
+              type="text"
+              id="notification-name"
+              class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="My Slack Channel"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
+            <select
+              id="notification-type"
+              class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="slack">Slack</option>
+              <option value="telegram">Telegram</option>
+              <option value="discord">Discord</option>
+              <option value="email">Email</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Shoutrrr URL</label>
+            <input
+              type="text"
+              id="notification-url"
+              class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="slack://token@channel"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              See
+              <a href="https://containrrr.dev/shoutrrr/" target="_blank" class="text-blue-400 hover:underline"
+                >Shoutrrr docs</a
+              >
+              for format
+            </p>
+          </div>
+          <div class="flex space-x-3">
+            <button
+              type="button"
+              onclick="testNotification()"
+              class="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              Test
+            </button>
+            <button
+              type="submit"
+              class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onclick="hideAddNotificationModal()"
+              class="flex-1 bg-dark-bg border border-dark-border hover:bg-dark-hover text-white px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
