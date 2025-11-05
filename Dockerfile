@@ -6,6 +6,9 @@ WORKDIR /build
 # Install build dependencies
 RUN apk add --no-cache git gcc musl-dev sqlite-dev
 
+# Set environment for SQLite compilation
+ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
+
 # Copy go mod files
 COPY go.mod go.sum ./
 RUN go mod download
@@ -13,8 +16,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the application
-RUN go build -o notifypipe ./cmd/notifypipe
+# Build the application with SQLite build tags for musl
+RUN go build -tags "sqlite_omit_load_extension" -o notifypipe ./cmd/notifypipe
 
 # Final stage
 FROM alpine:latest
