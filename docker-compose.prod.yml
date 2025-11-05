@@ -2,10 +2,7 @@ version: "3.9"
 
 services:
   notifypipe:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # image: ghcr.io/fatlirmorina/notifypipe:latest
+    image: fatlirmorina/notifypipe:latest
     container_name: notifypipe
     restart: unless-stopped
     volumes:

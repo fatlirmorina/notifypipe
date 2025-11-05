@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/pocketbase/pocketbase/models"
 )
 
 // healthCheck returns the health status
@@ -9,16 +10,22 @@ func (r *Router) healthCheck(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"status":  "ok",
 		"service": "NotifyPipe",
-		"version": "1.0.0",
+		"version": "1.0.1",
 	})
 }
 
 // getSetupStatus checks if the app has been set up
 func (r *Router) getSetupStatus(c *fiber.Ctx) error {
 	// Check if we have any notification channels configured
-	records, err := r.db.App().Dao().FindRecordsByExpr("notifications", nil)
+	records, err := r.db.App().Dao().FindRecordsByFilter(
+		"notifications",
+		"",
+		"",
+		1,
+		0,
+	)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		records = []*models.Record{}
 	}
 
 	isSetup := len(records) > 0
@@ -40,21 +47,21 @@ func (r *Router) completeSetup(c *fiber.Ctx) error {
 // getStats returns application statistics
 func (r *Router) getStats(c *fiber.Ctx) error {
 	// Count containers
-	containers, err := r.db.App().Dao().FindRecordsByExpr("containers", nil)
+	containers, err := r.db.App().Dao().FindRecordsByFilter("containers", "", "", 0, 0)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		containers = []*models.Record{}
 	}
 
 	// Count notification channels
-	notifications, err := r.db.App().Dao().FindRecordsByExpr("notifications", nil)
+	notifications, err := r.db.App().Dao().FindRecordsByFilter("notifications", "", "", 0, 0)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		notifications = []*models.Record{}
 	}
 
 	// Count recent events (last 24 hours)
-	events, err := r.db.App().Dao().FindRecordsByExpr("events_log", nil)
+	events, err := r.db.App().Dao().FindRecordsByFilter("events_log", "", "", 0, 0)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		events = []*models.Record{}
 	}
 
 	return c.JSON(fiber.Map{

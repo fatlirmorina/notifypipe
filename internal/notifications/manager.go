@@ -20,7 +20,7 @@ func NewManager(db *database.Database) *Manager {
 
 // Send sends a notification to all enabled channels
 func (m *Manager) Send(message string) {
-	records, err := m.db.App().Dao().FindRecordsByExpr("notifications", nil)
+	records, err := m.db.App().Dao().FindRecordsByFilter("notifications", "", "", 0, 0)
 	if err != nil {
 		log.Printf("Error fetching notifications: %v", err)
 		return

@@ -139,7 +139,7 @@ func (em *EventMonitor) handleContainerCreate(containerID, containerName string)
 
 // shouldNotify checks if we should send notification for this container
 func (em *EventMonitor) shouldNotify(containerID, eventType string) bool {
-	records, err := em.db.App().Dao().FindRecordsByExpr("containers", nil)
+	records, err := em.db.App().Dao().FindRecordsByFilter("containers", "", "", 0, 0)
 	if err != nil {
 		return false
 	}
@@ -188,7 +188,7 @@ func (em *EventMonitor) upsertContainer(containerID, containerName, image string
 	}
 
 	// Try to find existing record
-	records, err := em.db.App().Dao().FindRecordsByExpr("containers", nil)
+	records, err := em.db.App().Dao().FindRecordsByFilter("containers", "", "", 0, 0)
 	if err != nil {
 		log.Printf("Error finding container records: %v", err)
 		return

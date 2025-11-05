@@ -7,7 +7,13 @@ import (
 
 // listNotifications returns all notification channels
 func (r *Router) listNotifications(c *fiber.Ctx) error {
-	records, err := r.db.App().Dao().FindRecordsByExpr("notifications", nil)
+	records, err := r.db.App().Dao().FindRecordsByFilter(
+		"notifications",
+		"",
+		"",
+		0,
+		0,
+	)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}

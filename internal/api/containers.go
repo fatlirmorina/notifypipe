@@ -16,9 +16,16 @@ func (r *Router) listContainers(c *fiber.Ctx) error {
 	}
 
 	// Get container settings from database
-	dbRecords, err := r.db.App().Dao().FindRecordsByExpr("containers", nil)
+	dbRecords, err := r.db.App().Dao().FindRecordsByFilter(
+		"containers",
+		"",
+		"",
+		0,
+		0,
+	)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		// If collection doesn't exist yet, just continue with empty settings
+		dbRecords = []*models.Record{}
 	}
 
 	// Create a map for quick lookup
@@ -69,9 +76,15 @@ func (r *Router) getContainer(c *fiber.Ctx) error {
 	}
 
 	// Get settings from database
-	records, err := r.db.App().Dao().FindRecordsByExpr("containers", nil)
+	records, err := r.db.App().Dao().FindRecordsByFilter(
+		"containers",
+		"",
+		"",
+		0,
+		0,
+	)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		records = []*models.Record{}
 	}
 
 	var settings *models.Record
@@ -114,9 +127,15 @@ func (r *Router) updateContainer(c *fiber.Ctx) error {
 	}
 
 	// Find or create container record
-	records, err := r.db.App().Dao().FindRecordsByExpr("containers", nil)
+	records, err := r.db.App().Dao().FindRecordsByFilter(
+		"containers",
+		"",
+		"",
+		0,
+		0,
+	)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		records = []*models.Record{}
 	}
 
 	var existingRecord *models.Record
