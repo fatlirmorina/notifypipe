@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2025-11-05
 
 ### Fixed
+
 - Fixed PocketBase API compatibility issues with `FindRecordsByExpr` (replaced with `FindRecordsByFilter`)
 - Fixed 500 errors when accessing containers API
 - Improved error handling - APIs now gracefully handle missing database collections
@@ -15,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added proper CGO flags for Alpine Linux builds
 
 ### Changed
+
 - Updated all API endpoints to use correct PocketBase DAO methods
 - Improved database query error handling across all endpoints
 - Docker build now uses Go 1.23
